@@ -1,6 +1,8 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
+const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const Signals = imports.signals;
 const Clutter = imports.gi.Clutter;
@@ -41,7 +43,7 @@ const Bolt = new Lang.Class({
 		this.displayManager = new DisplayManager.DisplayManager(this);
 		this.settingsManager = new SettingsManager.SettingsManager(this);
 		this.keyboardManager = new KeyboardManager.KeyboardManager(this);
-		this.overviewOverride = new OverviewOverride.OverviewOverride(this);
+		//this.overviewOverride = new OverviewOverride.OverviewOverride(this);
 	},
 
 	setSizeAndPosition: function(size) {
@@ -172,6 +174,7 @@ const Bolt = new Lang.Class({
 	},
 
 	toggle: function() {
+        log('BOLT TOGGLING'); // @@
 		if (this.actor.visible) {
 			this.hide();
 		} else {
@@ -291,7 +294,14 @@ const Bolt = new Lang.Class({
 		this.themeManager.enable(true);
 		this.settingsManager.enable(true);
 		this.keyboardManager.enable(true);
-		this.overviewOverride.enable(true);
+		//this.overviewOverride.enable(true);
+
+        // key binding
+        Mainloop.idle_add(Lang.bind(this, function () {
+            Meta.keybindings_set_custom_handler('panel-main-menu',
+                Lang.bind(this, this.toggle));
+            return false;
+        }));
 	},
 
 	disable: function() {
@@ -302,7 +312,7 @@ const Bolt = new Lang.Class({
 		this.themeManager.enable(false);
 		this.settingsManager.enable(false);
 		this.keyboardManager.enable(false);
-		this.overviewOverride.enable(false);
+		//this.overviewOverride.enable(false);
 
 		// remove from layout
 		Main.layoutManager.removeChrome(this.actor);
@@ -325,6 +335,10 @@ const Bolt = new Lang.Class({
 
 		this.actor.destroy();
 		this.coverPane.destroy();
+
+        // key binding
+        Meta.keybindings_set_custom_handler('panel-main-menu', Lang.bind(
+                    Main.overview, Main.overview.toggle));
 	}
 });
 Signals.addSignalMethods(Bolt.prototype);
